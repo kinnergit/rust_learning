@@ -1,16 +1,27 @@
-type NodePtr<T> = Option<Box<Node<T>>>;
-struct Node<T>
-{
-    data: T,
-    next: NodePtr<T>,
+mod my_json;
+
+use crate::my_json::Person;
+use actix_web::{get, post, web, App, HttpServer, Responder};
+
+#[get("/{id}/{name}/index.html")]
+async fn index(info: web::Path<(u32, String)>) -> impl Responder {
+    format!("Hello {}! id:{}", info.1, info.0)
 }
 
-fn main() {
-    let mut n1 = Box::new(Node{data: 1, next: None});
-    let mut n2 = Box::new(Node{data: 2, next: None});
+#[post("/json")]
+async fn json(_: web::Path<()>) -> impl Responder {
+    let p = Person::new();
 
-    n1.next = Some(n2);
-    n2.next = Some(n1);
+    match p.to_json() {
+        Ok(json) => format!("{}", json),
+        Err(e) => format!("{}", e),
+    }
 }
 
-
+#[actix_rt::main]
+async fn main() -> std::io::Result<()> {
+    HttpServer::new(|| App::new().service(index).service(json))
+        .bind("127.0.0.1:8080")?
+        .run()
+        .await
+}
