@@ -1,27 +1,18 @@
-mod my_json;
+mod io;
+mod machine;
 
-use crate::my_json::Person;
-use actix_web::{get, post, web, App, HttpServer, Responder};
+use crate::io::file::file_get_contents_with_buffer;
 
-#[get("/{id}/{name}/index.html")]
-async fn index(info: web::Path<(u32, String)>) -> impl Responder {
-    format!("Hello {}! id:{}", info.1, info.0)
-}
+fn main() {
+    let path = "src/main.rs";
 
-#[post("/json")]
-async fn json(_: web::Path<()>) -> impl Responder {
-    let p = Person::new();
+    match file_get_contents_with_buffer(path) {
+        Ok(lines) => {
+            for line in lines {
+                println!("{}", line.unwrap());
+            }
+        }
 
-    match p.to_json() {
-        Ok(json) => format!("{}", json),
-        Err(e) => format!("{}", e),
+        Err(e) => println!("error: {}", e),
     }
-}
-
-#[actix_rt::main]
-async fn main() -> std::io::Result<()> {
-    HttpServer::new(|| App::new().service(index).service(json))
-        .bind("127.0.0.1:8080")?
-        .run()
-        .await
 }
