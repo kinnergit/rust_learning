@@ -2,6 +2,20 @@ use std::fs::{File, OpenOptions};
 use std::io::{BufRead, BufReader, Lines, Read, Result, Write};
 use std::path::PathBuf;
 
+pub fn run() {
+    let path = "src/main.rs";
+
+    match file_get_contents_with_buffer(path) {
+        Ok(lines) => {
+            for line in lines {
+                println!("{}", line.unwrap());
+            }
+        }
+
+        Err(e) => println!("error: {}", e),
+    }
+}
+
 pub fn file_get_contents_with_buffer(path: &str) -> Result<Lines<BufReader<File>>> {
     let path = PathBuf::from(path);
 
